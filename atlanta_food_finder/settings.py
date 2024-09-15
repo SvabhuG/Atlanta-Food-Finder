@@ -72,7 +72,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "atlanta_food_finder.wsgi.application"
 
-
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
