@@ -1,7 +1,7 @@
 
 from django.db import models
 
-class Restaurant(models.Model):
+class Restaurant_geolocation(models.Model):
     name = models.CharField(max_length=255)  # Stores the restaurant's name
     address = models.CharField(max_length=255)  # Stores the restaurant's address
     latitude = models.FloatField()  # Latitude for the map

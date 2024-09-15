@@ -1,6 +1,6 @@
 from django.shortcuts import render
 
-from .models import Restaurant
+from .models import Restaurant_geolocation
 from django.http import JsonResponse
 # Create your views here.
 
@@ -18,3 +18,6 @@ def restaurant_data(request):
     ]
 
     return JsonResponse(restaurant_list, safe=False)
+
+def show_map(request):
+    return render(request, 'map.html')  # Path to your HTML template

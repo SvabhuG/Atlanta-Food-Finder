@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Restaurant Locator</title>
+
+    <!-- Include the Google Maps API -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDBTscEKAPxdnG7yULWNsilYf9vURqhadg&callback=initMap" async defer></script>
+
+    <style>
+        #map {
+            height: 500px;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Restaurant Locator</h1>
+
+    <!-- Map container -->
+    <div id="map"></div>
+
+    <script>
+        // Initialize the map
+        function initMap() {
+            var atlanta = {lat: 33.7490, lng: -84.3880};  // Coordinates for Atlanta
+            var map = new google.maps.Map(document.getElementById('map'), {
+                zoom: 12,
+                center: atlanta
+            });
+
+            // Fetch restaurant data from Django backend
+            fetch('/api/restaurants/')
+                .then(response => response.json())
+                .then(restaurants => {
+                    restaurants.forEach(function(restaurant) {
+                        var marker = new google.maps.Marker({
+                            position: {lat: restaurant.lat, lng: restaurant.lng},
+                            map: map,
+                            title: restaurant.name
+                        });
+
+                        var infowindow = new google.maps.InfoWindow({
+                            content: `<h3>${restaurant.name}</h3><p>${restaurant.info}</p>`
+                        });
+
+                        marker.addListener('click', function() {
+                            infowindow.open(map, marker);
+                        });
+                    });
+                });
+        }
+    </script>
+
+</body>
+</html>
