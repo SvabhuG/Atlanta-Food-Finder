@@ -1,0 +1,20 @@
+<h2>Search Restaurants</h2>
+<form method="get">
+    {{ form.as_p }}
+    <button type="submit">Search</button>
+</form>
+
+<h2>Results</h2>
+<ul>
+    {% for restaurant in restaurants %}
+        <li>
+            <strong>{{ restaurant.name }}</strong><br>
+            Cuisine: {{ restaurant.cuisine_type }}<br>
+            Location: {{ restaurant.location }}<br>
+            Rating: {{ restaurant.rating }}<br>
+            Distance: {{ restaurant.distance }} miles<br>
+        </li>
+    {% empty %}
+        <li>No restaurants found</li>
+    {% endfor %}
+</ul>
