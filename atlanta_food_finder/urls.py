@@ -14,9 +14,16 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-from django.urls import path
+from django.contrib import admin
+from django.urls import path, include
+
 from food_finder import views
 
 urlpatterns = [
+    path('map/', views.show_map, name='show_map'),
+    path('api/restaurants/', views.restaurant_data, name='restaurant_data'),  # API for fetching restaurant data
+    path('admin/', admin.site.urls),
+    path('accounts/', include('allauth.urls')),  # Include allauth routes for login, registration, etc.
     path('search/', views.search_restaurants, name='search_restaurants'),
 ]
+

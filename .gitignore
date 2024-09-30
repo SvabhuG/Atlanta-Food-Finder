@@ -1,2 +1,7 @@
 /.idea
-.DS.Store
+.DS_Store
+atlanta_food_finder/__pycache__/
+food_finder/__pycache__/
+food_finder/migrations/__pycache__/
+templates/.DS_Store
+db.sqlite3
