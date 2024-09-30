@@ -1,43 +1,4 @@
-from django.shortcuts import render
-from .models import Restaurant
-from .forms import RestaurantSearchForm
 import requests
-from django.shortcuts import render
-
-API_KEY = 'AIzaSyCiFCKBxiMijE5OFYsQwslMx7VM6VEFmX0'
-
-# def search_restaurants(request):
-#     form = RestaurantSearchForm(request.GET or None)
-#     restaurants = Restaurant.objects.all()
-#
-#     if form.is_valid():
-#         if form.cleaned_data['name']:
-#             restaurants = restaurants.filter(name__icontains=form.cleaned_data['name'])
-#         if form.cleaned_data['cuisine_type']:
-#             restaurants = restaurants.filter(cuisine_type__icontains=form.cleaned_data['cuisine_type'])
-#         if form.cleaned_data['location']:
-#             restaurants = restaurants.filter(location__icontains=form.cleaned_data['location'])
-#         if form.cleaned_data['min_rating']:
-#             restaurants = restaurants.filter(rating__gte=form.cleaned_data['min_rating'])
-#         if form.cleaned_data['max_distance']:
-#             restaurants = restaurants.filter(distance__lte=form.cleaned_data['max_distance'])
-#
-#     context = {
-#         'form': form,
-#         'restaurants': restaurants
-#     }
-#
-#     return render(request, 'restaurant/search_results.html', context)
-#
-#
-# import requests
-# from django.shortcuts import render
-#
-# API_KEY = 'your_google_api_key'  # Replace with your API key
-
-
-import requests
-from django.shortcuts import render
 
 API_KEY = 'AIzaSyCiFCKBxiMijE5OFYsQwslMx7VM6VEFmX0'  # Replace with your API key
 
@@ -63,15 +24,21 @@ def search_restaurants(request):
     }
 
     return render(request, 'restaurant/search_results.html', context)
-from django.http import JsonResponse
-from .models import Restaurant_geolocation
 
+from django.shortcuts import render, redirect
+
+from django.http import JsonResponse
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth import login
+from .models import RestaurantGeolocation
+
+# Existing restaurant data view
 def restaurant_data(request):
     search_query = request.GET.get('name', '')
     if search_query:
-        restaurants = Restaurant_geolocation.objects.filter(name__icontains=search_query)
+        restaurants = RestaurantGeolocation.objects.filter(name__icontains=search_query)
     else:
-        restaurants = Restaurant_geolocation.objects.all()
+        restaurants = RestaurantGeolocation.objects.all()
 
     restaurant_list = [
         {
@@ -85,5 +52,19 @@ def restaurant_data(request):
 
     return JsonResponse(restaurant_list, safe=False)
 
+# Existing map view
 def show_map(request):
     return render(request, 'map.html')  # Path to your HTML template
+
+# New user registration view
+def register(request):
+    if request.method == 'POST':
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save()  # Save the user to the database
+            login(request, user)  # Log the user in after registration
+            return redirect('show_map')  # Redirect to map or home page after registration
+    else:
+        form = UserCreationForm()  # Create an empty form instance
+
+    return render(request, 'register.html', {'form': form})  # Render the registration template

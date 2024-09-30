@@ -1,3 +1,6 @@
 from django.contrib import admin
+from .models import RestaurantGeolocation, Like
 
-# Register your models here.
+admin.site.register(RestaurantGeolocation)
+admin.site.register(Like)
+
