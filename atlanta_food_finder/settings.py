@@ -11,12 +11,16 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 from pathlib import Path
+<<<<<<< HEAD
+import os
+=======
 import environ
 
 # Initialize environment variables
 env = environ.Env()
 environ.Env.read_env()
 
+>>>>>>> main
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -69,8 +73,10 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = "atlanta_food_finder.urls"
 
+
 TEMPLATES = [
     {
+
         "BACKEND": "django.template.backends.django.DjangoTemplates",
         "DIRS": [BASE_DIR / 'templates'],
         "APP_DIRS": True,

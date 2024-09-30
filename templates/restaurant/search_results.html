@@ -1,0 +1,26 @@
+<div class="container">
+    <h2>Search Restaurants</h2>
+    <form method="get">
+        <input type="text" name="query" placeholder="Search by name or cuisine" class="form-control mb-2" value="{{ query }}">
+        <input type="text" name="location" placeholder="Location (e.g., Atlanta)" class="form-control mb-2" value="{{ location }}">
+        <button type="submit" class="btn btn-primary">Search</button>
+    </form>
+
+    <div class="row mt-4">
+        {% for place in places %}
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <img src="{{ place.photos.0.photo_reference|default:'' }}" class="card-img-top" alt="{{ place.name }}">
+                <div class="card-body">
+                    <h5 class="card-title">{{ place.name }}</h5>
+                    <p class="card-text">{{ place.formatted_address }}</p>
+                    <p class="card-text">Rating: {{ place.rating }}</p>
+                    <a href="https://www.google.com/maps/search/?api=1&query={{ place.name }}" class="btn btn-primary" target="_blank">View on Map</a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <p>No restaurants found</p>
+        {% endfor %}
+    </div>
+</div>
