@@ -35,6 +35,10 @@
             text-align: center;
             margin-top: 1rem;
         }
+        .error-message {
+            color: red;
+            margin-bottom: 10px;
+        }
     </style>
 </head>
 <body>
@@ -43,20 +47,34 @@
     <h2>Create an Account</h2>
     <form method="post" action="{% url 'account_signup' %}">
         {% csrf_token %}
+
+        <!-- Display non-field errors (general form errors) -->
+        <div class="error-message">
+            {{ form.non_field_errors }}
+        </div>
+
         <div class="form-group">
             <label for="username">Username</label>
+            <!-- Show individual field errors -->
+            <div class="error-message">{{ form.username.errors }}</div>
             <input type="text" class="form-control" id="username" name="username" placeholder="Enter username" required>
         </div>
         <div class="form-group">
             <label for="email">Email address</label>
+            <!-- Show individual field errors -->
+            <div class="error-message">{{ form.email.errors }}</div>
             <input type="email" class="form-control" id="email" name="email" placeholder="Enter email" required>
         </div>
         <div class="form-group">
             <label for="password1">Password</label>
+            <!-- Show individual field errors -->
+            <div class="error-message">{{ form.password1.errors }}</div>
             <input type="password" class="form-control" id="password1" name="password1" placeholder="Enter password" required>
         </div>
         <div class="form-group">
             <label for="password2">Confirm Password</label>
+            <!-- Show individual field errors -->
+            <div class="error-message">{{ form.password2.errors }}</div>
             <input type="password" class="form-control" id="password2" name="password2" placeholder="Confirm password" required>
         </div>
         <button type="submit" class="btn btn-primary">Sign Up</button>
