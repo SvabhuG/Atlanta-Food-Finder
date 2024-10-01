@@ -12,6 +12,10 @@ API_KEY = 'AIzaSyCiFCKBxiMijE5OFYsQwslMx7VM6VEFmX0'  # Replace with your API key
 # views.py
 
 def search_restaurants(request):
+    if not request.user.is_authenticated:
+        # Redirect to login if the user is not authenticated
+        return redirect('account_login')
+
     query = request.GET.get('query', '')  # This could be restaurant name or cuisine type
     location = request.GET.get('location', 'Atlanta')  # Default location if none provided
 
