@@ -4,7 +4,7 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import login
 
 from django.shortcuts import render, redirect, get_object_or_404
-from .models import Like, RestaurantGeolocation, FavoriteRestaurant
+from .models import RestaurantGeolocation, FavoriteRestaurant
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
 
@@ -20,18 +20,39 @@ def search_restaurants(request):
     # Retrieve the API key from settings
     API_KEY = settings.GOOGLE_MAPS_API_KEY
 
-    # Call the Google Places API
-    url = f"https://maps.googleapis.com/maps/api/place/textsearch/json?query={query}+restaurants&location={location}&radius=5000&key={API_KEY}"
-    response = requests.get(url)
+    # Call the Google Places Text Search API
+    text_search_url = f"https://maps.googleapis.com/maps/api/place/textsearch/json?query={query}+restaurants&location={location}&radius=5000&key={API_KEY}"
+    response = requests.get(text_search_url)
 
     # Extract places from the response
     places = response.json().get('results', [])
 
+    # List to store places along with reviews
+    places_with_reviews = []
+
     # Get the list of liked place_ids for the current user
     liked_restaurants = FavoriteRestaurant.objects.filter(user=request.user).values_list('place_id', flat=True)
 
+    # Call Place Details API to get reviews for each place
+    for place in places:
+        place_id = place.get('place_id')
+
+        # Call Google Places Details API to fetch reviews
+        details_url = f"https://maps.googleapis.com/maps/api/place/details/json?place_id={place_id}&fields=reviews&key={API_KEY}"
+        details_response = requests.get(details_url)
+        details_data = details_response.json()
+
+        # Check if reviews exist in the details response
+        reviews = details_data.get('result', {}).get('reviews', [])
+
+        # Append the reviews to the current place
+        place['reviews'] = reviews
+
+        # Add the place with reviews to the list
+        places_with_reviews.append(place)
+
     context = {
-        'places': places,
+        'places': places_with_reviews,
         'query': query,
         'location': location,
         'liked_restaurants': liked_restaurants,

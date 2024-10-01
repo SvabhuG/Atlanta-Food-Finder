@@ -13,11 +13,11 @@
                 {% for favorite in favorite_restaurants %}
                 <div class="col-md-6 mb-4">
                     <div class="card">
-                        <img src="{{ favorite.restaurant_photo_reference }}" class="card-img-top" alt="{{ favorite.restaurant_name }}">
+                        <img src="https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference={{ favorite.restaurant.restaurant_photo_reference }}&key={{ google_maps_api_key }}" class="card-img-top" alt="{{ favorite.restaurant_name }}">
                         <div class="card-body">
-                            <h5 class="card-title">{{ favorite.restaurant_name }}</h5>
-                            <p class="card-text">{{ favorite.restaurant_address }}</p>
-                            <p class="card-text">Rating: {{ favorite.restaurant_rating }}</p>
+                            <h5 class="card-title">{{ favorite.restaurant.restaurant_name }}</h5>
+                            <p class="card-text">{{ favorite.restaurant.restaurant_address }}</p>
+                            <p class="card-text">Rating: {{ favorite.restaurant.restaurant_rating }}</p>
 
                             <!-- Unlike button -->
                             <form method="post" action="{% url 'unlike_restaurant' favorite.restaurant.id %}">
