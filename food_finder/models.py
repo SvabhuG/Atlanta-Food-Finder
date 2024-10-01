@@ -1,7 +1,4 @@
-
-# Create your models here.
 from django.contrib.auth.models import User
-
 from django.db import models
 
 
@@ -15,6 +12,7 @@ class Restaurant(models.Model):
     def __str__(self):
         return self.name
 
+
 class FavoriteRestaurant(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     place_id = models.CharField(max_length=255, unique=True)  # Unique identifier from Google Places API
@@ -24,9 +22,11 @@ class FavoriteRestaurant(models.Model):
     restaurant_photo_reference = models.CharField(max_length=500, null=True, blank=True)
     latitude = models.FloatField(null=True, blank=True)  # Allow latitude to be nullable
     longitude = models.FloatField(null=True, blank=True)  # Allow longitude to be nullable
+    phone_number = models.CharField(max_length=20, null=True, blank=True)  # New field for contact number
 
     def __str__(self):
         return f"{self.restaurant_name} (Favorited by {self.user.username})"
+
 
 
 class RestaurantGeolocation(models.Model):
@@ -40,3 +40,12 @@ class RestaurantGeolocation(models.Model):
         return self.name  # This returns the name when the model object is called
 
 
+class Review(models.Model):
+    favorite_restaurant = models.ForeignKey(FavoriteRestaurant, related_name='reviews', on_delete=models.CASCADE)
+    author_name = models.CharField(max_length=255)
+    rating = models.FloatField()
+    text = models.TextField()
+    relative_time_description = models.CharField(max_length=255)
+
+    def __str__(self):
+        return f"Review by {self.author_name} for {self.favorite_restaurant.restaurant_name}"

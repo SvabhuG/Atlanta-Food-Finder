@@ -18,6 +18,23 @@
                             <h5 class="card-title">{{ favorite.restaurant.restaurant_name }}</h5>
                             <p class="card-text">{{ favorite.restaurant.restaurant_address }}</p>
                             <p class="card-text">Rating: {{ favorite.restaurant.restaurant_rating }}</p>
+                            <p class="card-text">Rating: {{ favorite.restaurant.phone_number }}</p>
+
+                            <!-- Display the first 2 reviews for each restaurant -->
+                            <h6>Google Reviews:</h6>
+                            {% if favorite.restaurant.reviews.exists %}
+                                <ul class="list-group">
+                                    {% for review in favorite.restaurant.reviews.all|slice:":2" %}
+                                        <li class="list-group-item">
+                                            <strong>{{ review.author_name }}</strong> rated {{ review.rating }} stars
+                                            <p>{{ review.text }}</p>
+                                            <small>{{ review.relative_time_description }}</small>
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            {% else %}
+                                <p>No reviews available.</p>
+                            {% endif %}
 
                             <!-- Unlike button -->
                             <form method="post" action="{% url 'unlike_restaurant' favorite.restaurant.id %}">
