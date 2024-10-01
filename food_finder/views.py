@@ -6,6 +6,7 @@ from django.contrib.auth import login
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import Like, RestaurantGeolocation, FavoriteRestaurant
 from django.contrib.auth.decorators import login_required
+from django.conf import settings
 
 API_KEY = 'AIzaSyCiFCKBxiMijE5OFYsQwslMx7VM6VEFmX0'  # Replace with your API key
 
@@ -79,6 +80,12 @@ def like_restaurant(request):
 
     return redirect('search_restaurants')
 
+@login_required
+def unlike_restaurant(request, favorite_id):
+    favorite = get_object_or_404(FavoriteRestaurant, id=favorite_id, user=request.user)
+    favorite.delete()  # Remove the favorite restaurant
+    return redirect('favorite_restaurants')  # Redirect back to the favorite restaurants list
+
 # Existing restaurant data view
 def restaurant_data(request):
     search_query = request.GET.get('name', '')
@@ -100,8 +107,13 @@ def restaurant_data(request):
     return JsonResponse(restaurant_list, safe=False)
 
 # Existing map view
-def show_map(request):
-    return render(request, 'map.html')  # Path to your HTML template
+def show_map(request, place_id):
+    context = {
+        'place_id': place_id,
+        'google_maps_api_key': settings.GOOGLE_MAPS_API_KEY,  # Pass your Google Maps API key to the template
+    }
+    return render(request, 'map.html', context)
+
 
 # New user registration view
 def register(request):

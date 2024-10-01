@@ -1,8 +1,8 @@
 <div class="container">
     <h2>Search Restaurants</h2>
     <form method="get">
+        <!-- Only the query input field remains, the location field has been removed -->
         <input type="text" name="query" placeholder="Search by name or cuisine" class="form-control mb-2" value="{{ query }}">
-        <input type="text" name="location" placeholder="Location (e.g., Atlanta)" class="form-control mb-2" value="{{ location }}">
         <button type="submit" class="btn btn-primary">Search</button>
     </form>
 
@@ -15,7 +15,9 @@
                     <h5 class="card-title">{{ place.name }}</h5>
                     <p class="card-text">{{ place.formatted_address }}</p>
                     <p class="card-text">Rating: {{ place.rating }}</p>
-                    <a href="https://www.google.com/maps/search/?api=1&query={{ place.name }}" class="btn btn-primary" target="_blank">View on Map</a>
+
+                    <!-- Link to your custom map view -->
+                    <a href="{% url 'show_map' place.place_id %}" class="btn btn-primary" target="_blank">View on Map</a>
 
                     <!-- Add a "Like" button -->
                     <form method="post" action="{% url 'like_restaurant' %}">
@@ -46,3 +48,4 @@
         <a href="{% url 'favorite_restaurants' %}" class="btn btn-success">View My Favorites</a>
     </div>
 </div>
+

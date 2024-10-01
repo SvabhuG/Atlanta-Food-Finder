@@ -20,12 +20,13 @@ from django.urls import path, include
 from food_finder import views
 
 urlpatterns = [
-    path('map/', views.show_map, name='show_map'),
+    path('map/<str:place_id>/', views.show_map, name='show_map'),
     path('api/restaurants/', views.restaurant_data, name='restaurant_data'),  # API for fetching restaurant data
     path('admin/', admin.site.urls),
     path('accounts/', include('allauth.urls')),  # Include allauth routes for login, registration, etc.
     path('search/', views.search_restaurants, name='search_restaurants'),
     path('like/', views.like_restaurant, name='like_restaurant'),
     path('favorites/', views.favorite_restaurants, name='favorite_restaurants'),
+    path('unlike/<int:favorite_id>/', views.unlike_restaurant, name='unlike_restaurant'),
 ]
 
