@@ -1,109 +1,272 @@
-<div class="container" style="display: flex; flex-direction: row;">
-    <!-- Left column: search results -->
-    <div style="width: 50%; padding-right: 20px;"> <!-- Set width of search results to 50% -->
-        <h2>Search Restaurants</h2>
-        <form method="get">
-            <!-- Only the query input field remains -->
-            <input type="text" name="query" placeholder="Search by name or cuisine" class="form-control mb-2" value="{{ query }}">
-            <button type="submit" class="btn btn-primary">Search</button>
-        </form>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Restaurant Finder</title>
 
-        <!-- Display the search results if a query exists -->
-        <div class="row mt-4">
-            {% for place in places %}
-            <div class="col-lg-12 col-md-12 mb-4"> <!-- Adjusted to take up full width within left side -->
-                <div class="card" style="min-width: 250px;"> <!-- Make sure card is responsive -->
-                    <!-- Updated Image Tag -->
-                    <img src="https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference={{ place.photos.0.photo_reference }}&key={{ google_maps_api_key }}" class="card-img-top" alt="{{ place.name }}">
+    <!-- Materialize CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f5f5f5;
+            font-family: 'Roboto', sans-serif;
+        }
 
-                    <div class="card-body">
-                        <h5 class="card-title">{{ place.name }}</h5>
-                        <p class="card-text">{{ place.formatted_address }}</p>
-                        <p class="card-text">Rating: {{ place.rating }}</p>
+        .search-section {
+            padding: 100px 0;
+            background-color: #1565c0; /* Material Blue */
+            color: white;
+            text-align: center;
+            position: relative; /* Added to allow positioning of the Favorites button */
+        }
 
-                        <!-- Like/Unlike functionality -->
-                        <form method="post" action="{% url 'like_restaurant' %}">
-                            {% csrf_token %}
-                            <input type="hidden" name="place_id" value="{{ place.place_id }}">
-                            <input type="hidden" name="restaurant_name" value="{{ place.name }}">
-                            <input type="hidden" name="restaurant_address" value="{{ place.formatted_address }}">
-                            <input type="hidden" name="restaurant_rating" value="{{ place.rating }}">
-                            <input type="hidden" name="restaurant_photo_reference" value="{{ place.photos.0.photo_reference }}">
-                            <button type="submit" class="btn btn-warning mt-2">
-                                {% if place.place_id in liked_restaurants %}
-                                    Unlike
-                                {% else %}
-                                    Like
-                                {% endif %}
-                            </button>
-                        </form>
+        .favorites-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background-color: #0d47a1 !important;
+            color: white !important;
+        }
+
+        .favorites-btn-bottom {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #0d47a1 !important;
+            color: white !important;
+        }
+
+        .search-bar {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .btn {
+            background-color: #0d47a1 !important; /* Darker blue for the button */
+            color: white !important;
+        }
+
+        .restaurant-card {
+            transition: transform 0.3s ease;
+            width: 80%; /* Make the card smaller */
+        }
+
+        .restaurant-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card-title {
+            font-weight: bold;
+            color: #1565c0; /* Card title in blue */
+        }
+
+        .recommendations {
+            margin-top: 50px;
+            color: white; /* Keep recommendation text white */
+        }
+
+        .card .card-content {
+            background-color: white;
+            color: #1565c0;
+        }
+
+        .card .card-action a {
+            color: #1565c0; /* Card action links in blue */
+        }
+
+        /* Map and results layout */
+        .results-container {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+        }
+
+        .map-container {
+            height: 100vh;
+            width: 50%; /* Map takes half of the screen */
+            display: none; /* Hidden initially */
+        }
+
+        .results-section {
+            width: 50%; /* Results take the other half of the screen */
+            display: none; /* Hidden initially */
+        }
+    </style>
+</head>
+<body>
+
+<!-- Search Section -->
+<div class="search-section">
+    <h3>Find the Best Restaurants</h3>
+
+    <!-- Favorites button at the top right -->
+    <a href="{% url 'favorite_restaurants' %}" class="btn favorites-btn">View My Favorites</a>
+
+    <div class="row search-bar">
+        <div class="input-field col s12">
+            <input type="text" id="search" name="query" placeholder="Search by name or cuisine" class="validate" style="color: white;">
+            <label for="search" style="color: white;">Search for restaurants</label>
+        </div>
+        <button class="btn waves-effect waves-light" id="searchBtn">Search</button>
+    </div>
+
+    <!-- Recommendations (Initial Page) -->
+    <div class="recommendations">
+        <h5>Popular Picks</h5>
+        <div class="row">
+            <div class="col s4">
+                <div class="card restaurant-card">
+                    <div class="card-image">
+                        <img src="https://via.placeholder.com/150">
+                        <span class="card-title">Popular Restaurant 1</span>
+                    </div>
+                    <div class="card-content">
+                        <p>Famous for its delightful cuisine and a cozy atmosphere.</p>
+                    </div>
+                    <div class="card-action">
+                        <a href="#">View More</a>
                     </div>
                 </div>
             </div>
-            {% empty %}
-            <p>No restaurants found</p>
-            {% endfor %}
+            <div class="col s4">
+                <div class="card restaurant-card">
+                    <div class="card-image">
+                        <img src="https://via.placeholder.com/150">
+                        <span class="card-title">Popular Restaurant 2</span>
+                    </div>
+                    <div class="card-content">
+                        <p>A must-visit spot for its unique flavors and outstanding service.</p>
+                    </div>
+                    <div class="card-action">
+                        <a href="#">View More</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col s4">
+                <div class="card restaurant-card">
+                    <div class="card-image">
+                        <img src="https://via.placeholder.com/150">
+                        <span class="card-title">Popular Restaurant 3</span>
+                    </div>
+                    <div class="card-content">
+                        <p>Offers an unforgettable dining experience with a touch of elegance.</p>
+                    </div>
+                    <div class="card-action">
+                        <a href="#">View More</a>
+                    </div>
+                </div>
+            </div>
         </div>
-
-        <!-- Link to view all liked restaurants -->
-        <div class="mt-4">
-            <a href="{% url 'favorite_restaurants' %}" class="btn btn-success">View My Favorites</a>
-        </div>
-    </div>
-
-    <!-- Right column: Sticky Map -->
-    <div style="width: 50%; position: sticky; top: 0;"> <!-- Set the width of the map to 50% -->
-        <div id="map" style="height: 100vh; width: 100%;"></div> <!-- Ensure the map takes the full height -->
     </div>
 </div>
+
+<!-- Results and Map Section (hidden initially) -->
+<div class="results-container">
+    <!-- Results Section -->
+    <div class="container results-section">
+        <div class="row">
+            <div class="col s12">
+                <div id="results"></div> <!-- Container for search results -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Map Section -->
+    <div class="map-container">
+        <div id="map" style="height: 100%; width: 100%;"></div>
+    </div>
+
+    <!-- Favorites button at the bottom right -->
+    <a href="{% url 'favorite_restaurants' %}" class="btn favorites-btn-bottom">View My Favorites</a>
+</div>
+
+<!-- Materialize JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+<!-- Google Maps JS -->
+<script src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}&callback=initMap" async defer></script>
 
 <script>
     let map;
     let markers = []; // Array to hold markers
 
+    // Dummy places array (replace with actual search result)
+    let places = [
+        {name: 'Restaurant A', formatted_address: '123 A St', rating: 4.5, photos: [{photo_reference: 'somephotoid'}], place_id: '1', geometry: {location: {lat: 33.749, lng: -84.388}}},
+        {name: 'Restaurant B', formatted_address: '456 B St', rating: 4.0, photos: [{photo_reference: 'somephotoid'}], place_id: '2', geometry: {location: {lat: 33.759, lng: -84.388}}},
+        {name: 'Restaurant C', formatted_address: '789 C St', rating: 4.2, photos: [{photo_reference: 'somephotoid'}], place_id: '3', geometry: {location: {lat: 33.769, lng: -84.388}}}
+    ];
+
+    // Initialize Google Map
     function initMap() {
-        // Create a map centered on a default location (Atlanta)
         map = new google.maps.Map(document.getElementById('map'), {
             zoom: 12,
             center: { lat: 33.7490, lng: -84.3880 } // Default center on Atlanta
         });
+    }
 
+    // Handle search action
+    document.getElementById('searchBtn').addEventListener('click', function () {
+        // Hide recommendations
+        document.querySelector('.search-section').style.display = 'none';
+
+        // Show results and map sections
+        document.querySelector('.results-section').style.display = 'block';
+        document.querySelector('.map-container').style.display = 'block';
+
+        // Display search results as cards
+        let resultsDiv = document.getElementById('results');
+        resultsDiv.innerHTML = ''; // Clear previous results
+
+        places.forEach(function (place) {
+            let imageURL = `https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=${place.photos[0].photo_reference}&key={{ google_maps_api_key }}`;
+            let card = `
+                <div class="card restaurant-card">
+                    <div class="card-image">
+                        <img src="${imageURL}" alt="${place.name}">
+                        <span class="card-title">${place.name}</span>
+                    </div>
+                    <div class="card-content">
+                        <p>${place.formatted_address}</p>
+                        <p>Rating: ${place.rating}</p>
+                    </div>
+                    <div class="card-action">
+                        <a href="#">View on Map</a>
+                        <button class="btn like-btn">Like</button>
+                    </div>
+                </div>
+            `;
+            resultsDiv.innerHTML += card;
+        });
+
+
+        // Add markers to the map
+        addMarkersToMap();
+    });
+
+    // Add markers to the map
+    function addMarkersToMap() {
         // Clear existing markers
         markers.forEach(marker => marker.setMap(null));
         markers = [];
 
-        // Loop through the places passed to the template and add markers to the map
-        {% for place in places %}
-        addMarker({
-            lat: {{ place.geometry.location.lat }},
-            lng: {{ place.geometry.location.lng }},
-            name: "{{ place.name }}",
-            address: "{{ place.formatted_address }}"
+        places.forEach(function (place) {
+            let marker = new google.maps.Marker({
+                position: place.geometry.location,
+                map: map,
+                title: place.name
+            });
+
+            markers.push(marker);
+
+            // Add click event listener to show info window
+            marker.addListener('click', function () {
+                let infoWindow = new google.maps.InfoWindow({
+                    content: `<h5>${place.name}</h5><p>${place.formatted_address}</p>`
+                });
+                infoWindow.open(map, marker);
+            });
         });
-        {% endfor %}
     }
-
-    function addMarker(place) {
-        const marker = new google.maps.Marker({
-            position: { lat: place.lat, lng: place.lng },
-            map: map,
-            title: place.name
-        });
-
-        const infowindow = new google.maps.InfoWindow({
-            content: `<h5>${place.name}</h5><p>${place.address}</p>`
-        });
-
-        marker.addListener('click', function () {
-            infowindow.open(map, marker);
-        });
-
-        markers.push(marker);
-    }
-
-    // Initialize the map when the page loads
-    window.onload = initMap;
 </script>
-
-<!-- Include the Google Maps API -->
-<script src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}&callback=initMap" async defer></script>
+</body>
