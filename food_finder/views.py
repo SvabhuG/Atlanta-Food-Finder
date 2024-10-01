@@ -108,14 +108,6 @@ def restaurant_data(request):
 
     return JsonResponse(restaurant_list, safe=False)
 
-# Existing map view
-def show_map(request, place_id):
-    context = {
-        'place_id': place_id,
-        'google_maps_api_key': settings.GOOGLE_MAPS_API_KEY,  # Pass your Google Maps API key to the template
-    }
-    return render(request, 'map.html', context)
-
 
 # New user registration view
 def register(request):
