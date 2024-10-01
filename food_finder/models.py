@@ -24,8 +24,7 @@ class Restaurant_geolocation(models.Model):
 
     def __str__(self):
         return self.name  # This returns the name when the model object is called
-from django.db import models
-from django.contrib.auth.models import User
+
 
 class FavoriteRestaurant(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -34,9 +33,12 @@ class FavoriteRestaurant(models.Model):
     restaurant_address = models.CharField(max_length=255)
     restaurant_rating = models.FloatField()
     restaurant_photo_reference = models.CharField(max_length=500, null=True, blank=True)
+    latitude = models.FloatField(null=True, blank=True)  # Allow latitude to be nullable
+    longitude = models.FloatField(null=True, blank=True)  # Allow longitude to be nullable
 
     def __str__(self):
         return f"{self.restaurant_name} (Favorited by {self.user.username})"
+
 
 class RestaurantGeolocation(models.Model):
     name = models.CharField(max_length=255, default="Unnamed Restaurant")  # Default restaurant name

@@ -24,20 +24,23 @@
 
                             <!-- Like/Unlike functionality -->
                             <form method="post" action="{% url 'like_restaurant' %}">
-                                {% csrf_token %}
-                                <input type="hidden" name="place_id" value="{{ place.place_id }}">  <!-- Use place_id from API -->
-                                <input type="hidden" name="restaurant_name" value="{{ place.name }}">
-                                <input type="hidden" name="restaurant_address" value="{{ place.formatted_address }}">
-                                <input type="hidden" name="restaurant_rating" value="{{ place.rating }}">
-                                <input type="hidden" name="restaurant_photo_reference" value="{{ place.photos.0.photo_reference }}">
-                                <button type="submit" class="btn btn-warning mt-2">
-                                    {% if place.place_id in liked_restaurants %}
-                                        Unlike
-                                    {% else %}
-                                        Like
-                                    {% endif %}
-                                </button>
-                            </form>
+                            {% csrf_token %}
+                            <input type="hidden" name="place_id" value="{{ place.place_id }}">
+                            <input type="hidden" name="restaurant_name" value="{{ place.name }}">
+                            <input type="hidden" name="restaurant_address" value="{{ place.formatted_address }}">
+                            <input type="hidden" name="restaurant_rating" value="{{ place.rating }}">
+                            <input type="hidden" name="restaurant_photo_reference" value="{{ place.photos.0.photo_reference }}">
+                            <input type="hidden" name="latitude" value="{{ place.geometry.location.lat }}">  <!-- Latitude from API -->
+                            <input type="hidden" name="longitude" value="{{ place.geometry.location.lng }}">  <!-- Longitude from API -->
+                            <button type="submit" class="btn btn-warning mt-2">
+                                {% if place.place_id in liked_restaurants %}
+                                    Unlike
+                                {% else %}
+                                    Like
+                                {% endif %}
+                            </button>
+                        </form>
+
                         </div>
                     </div>
                 </div>

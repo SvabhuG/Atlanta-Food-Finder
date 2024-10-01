@@ -40,20 +40,28 @@ def search_restaurants(request):
 
     return render(request, 'restaurant/search_results.html', context)
 
-
-
-# views.py
-
 @login_required
 def favorite_restaurants(request):
     # Get the list of liked restaurants for the current user
     favorite_restaurants = FavoriteRestaurant.objects.filter(user=request.user)
 
+    # Prepare restaurant data with latitude and longitude for the map
+    restaurant_data = [
+        {
+            'restaurant': favorite,
+            'latitude': favorite.latitude,  # Assuming latitude is stored
+            'longitude': favorite.longitude  # Assuming longitude is stored
+        }
+        for favorite in favorite_restaurants
+    ]
+
     context = {
-        'favorite_restaurants': favorite_restaurants
+        'favorite_restaurants': restaurant_data,
+        'google_maps_api_key': settings.GOOGLE_MAPS_API_KEY,  # Pass the API key to the template
     }
 
     return render(request, 'restaurant/favorite_restaurants.html', context)
+
 @login_required
 def like_restaurant(request):
     if request.method == 'POST':
@@ -62,6 +70,8 @@ def like_restaurant(request):
         restaurant_address = request.POST.get('restaurant_address')
         restaurant_rating = request.POST.get('restaurant_rating')
         restaurant_photo_reference = request.POST.get('restaurant_photo_reference')
+        latitude = request.POST.get('latitude')
+        longitude = request.POST.get('longitude')
 
         # Check if the user has already liked this restaurant (based on place_id)
         existing_favorite = FavoriteRestaurant.objects.filter(user=request.user, place_id=place_id)
@@ -77,10 +87,13 @@ def like_restaurant(request):
                 restaurant_name=restaurant_name,
                 restaurant_address=restaurant_address,
                 restaurant_rating=restaurant_rating,
-                restaurant_photo_reference=restaurant_photo_reference
+                restaurant_photo_reference=restaurant_photo_reference,
+                latitude=latitude,
+                longitude=longitude
             )
 
     return redirect('search_restaurants')
+
 
 @login_required
 def unlike_restaurant(request, favorite_id):
@@ -88,7 +101,6 @@ def unlike_restaurant(request, favorite_id):
     favorite.delete()  # Remove the favorite restaurant
     return redirect('favorite_restaurants')  # Redirect back to the favorite restaurants list
 
-# Existing restaurant data view
 def restaurant_data(request):
     search_query = request.GET.get('name', '')
     if search_query:
@@ -107,7 +119,6 @@ def restaurant_data(request):
     ]
 
     return JsonResponse(restaurant_list, safe=False)
-
 
 # New user registration view
 def register(request):
