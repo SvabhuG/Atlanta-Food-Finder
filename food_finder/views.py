@@ -12,13 +12,13 @@ API_KEY = 'AIzaSyCiFCKBxiMijE5OFYsQwslMx7VM6VEFmX0'  # Replace with your API key
 
 # views.py
 
+@login_required
 def search_restaurants(request):
-    if not request.user.is_authenticated:
-        # Redirect to login if the user is not authenticated
-        return redirect('account_login')
-
     query = request.GET.get('query', '')  # This could be restaurant name or cuisine type
     location = request.GET.get('location', 'Atlanta')  # Default location if none provided
+
+    # Retrieve the API key from settings
+    API_KEY = settings.GOOGLE_MAPS_API_KEY
 
     # Call the Google Places API
     url = f"https://maps.googleapis.com/maps/api/place/textsearch/json?query={query}+restaurants&location={location}&radius=5000&key={API_KEY}"
@@ -34,10 +34,12 @@ def search_restaurants(request):
         'places': places,
         'query': query,
         'location': location,
-        'liked_restaurants': liked_restaurants,  # Pass the list of liked place_ids
+        'liked_restaurants': liked_restaurants,
+        'google_maps_api_key': API_KEY,  # Pass the API key to the template
     }
 
     return render(request, 'restaurant/search_results.html', context)
+
 
 
 # views.py

@@ -1,51 +1,111 @@
 <div class="container">
     <h2>Search Restaurants</h2>
-    <form method="get">
-        <!-- Only the query input field remains, the location field has been removed -->
-        <input type="text" name="query" placeholder="Search by name or cuisine" class="form-control mb-2" value="{{ query }}">
-        <button type="submit" class="btn btn-primary">Search</button>
-    </form>
 
-    <div class="row mt-4">
-        {% for place in places %}
-        <div class="col-md-4 mb-4">
-            <div class="card">
-                <img src="{{ place.photos.0.photo_reference|default:'' }}" class="card-img-top" alt="{{ place.name }}">
-                <div class="card-body">
-                    <h5 class="card-title">{{ place.name }}</h5>
-                    <p class="card-text">{{ place.formatted_address }}</p>
-                    <p class="card-text">Rating: {{ place.rating }}</p>
+    <div class="row">
+        <!-- Left column: search results -->
+        <div class="col-md-8">
+            <form method="get">
+                <!-- Only the query input field remains, the location field has been removed -->
+                <input type="text" name="query" placeholder="Search by name or cuisine" class="form-control mb-2" value="{{ query }}">
+                <button type="submit" class="btn btn-primary">Search</button>
+            </form>
 
-                    <!-- Link to your custom map view -->
-                    <a href="{% url 'show_map' place.place_id %}" class="btn btn-primary" target="_blank">View on Map</a>
+            <div class="row mt-4">
+                {% for place in places %}
+                <div class="col-md-6 mb-4">
+                    <div class="card">
+                        <!-- Updated Image Tag -->
+                        <img src="https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference={{ place.photos.0.photo_reference }}&key={{ google_maps_api_key }}" class="card-img-top" alt="{{ place.name }}">
 
-                    <!-- Add a "Like" button -->
-                    <form method="post" action="{% url 'like_restaurant' %}">
-                        {% csrf_token %}
-                        <input type="hidden" name="place_id" value="{{ place.place_id }}">  <!-- Use place_id from API -->
-                        <input type="hidden" name="restaurant_name" value="{{ place.name }}">
-                        <input type="hidden" name="restaurant_address" value="{{ place.formatted_address }}">
-                        <input type="hidden" name="restaurant_rating" value="{{ place.rating }}">
-                        <input type="hidden" name="restaurant_photo_reference" value="{{ place.photos.0.photo_reference }}">
-                        <button type="submit" class="btn btn-warning mt-2">
-                            {% if place.place_id in liked_restaurants %}
-                                Unlike
-                            {% else %}
-                                Like
-                            {% endif %}
-                        </button>
-                    </form>
+                        <div class="card-body">
+                            <h5 class="card-title">{{ place.name }}</h5>
+                            <p class="card-text">{{ place.formatted_address }}</p>
+                            <p class="card-text">Rating: {{ place.rating }}</p>
+
+                            <!-- Like/Unlike functionality -->
+                            <form method="post" action="{% url 'like_restaurant' %}">
+                                {% csrf_token %}
+                                <input type="hidden" name="place_id" value="{{ place.place_id }}">  <!-- Use place_id from API -->
+                                <input type="hidden" name="restaurant_name" value="{{ place.name }}">
+                                <input type="hidden" name="restaurant_address" value="{{ place.formatted_address }}">
+                                <input type="hidden" name="restaurant_rating" value="{{ place.rating }}">
+                                <input type="hidden" name="restaurant_photo_reference" value="{{ place.photos.0.photo_reference }}">
+                                <button type="submit" class="btn btn-warning mt-2">
+                                    {% if place.place_id in liked_restaurants %}
+                                        Unlike
+                                    {% else %}
+                                        Like
+                                    {% endif %}
+                                </button>
+                            </form>
+                        </div>
+                    </div>
                 </div>
+                {% empty %}
+                <p>No restaurants found</p>
+                {% endfor %}
+            </div>
+
+            <!-- Link to view all liked restaurants -->
+            <div class="mt-4">
+                <a href="{% url 'favorite_restaurants' %}" class="btn btn-success">View My Favorites</a>
             </div>
         </div>
-        {% empty %}
-        <p>No restaurants found</p>
-        {% endfor %}
-    </div>
 
-    <!-- Link to view all liked restaurants -->
-    <div class="mt-4">
-        <a href="{% url 'favorite_restaurants' %}" class="btn btn-success">View My Favorites</a>
+        <!-- Right column: Map -->
+        <div class="col-md-4">
+            <div id="map" style="height: 500px; width: 100%;"></div>
+        </div>
     </div>
 </div>
 
+<script>
+    let map;
+    let markers = []; // Array to hold markers
+
+    function initMap() {
+        // Create a map centered on a default location (Atlanta)
+        map = new google.maps.Map(document.getElementById('map'), {
+            zoom: 12,
+            center: {lat: 33.7490, lng: -84.3880} // Default center on Atlanta
+        });
+
+        // Clear existing markers
+        markers.forEach(marker => marker.setMap(null));
+        markers = [];
+
+        // Loop through the places passed to the template and add markers to the map
+        {% for place in places %}
+        addMarker({
+            lat: {{ place.geometry.location.lat }},
+            lng: {{ place.geometry.location.lng }},
+            name: "{{ place.name }}",
+            address: "{{ place.formatted_address }}"
+        });
+        {% endfor %}
+    }
+
+    function addMarker(place) {
+        const marker = new google.maps.Marker({
+            position: {lat: place.lat, lng: place.lng},
+            map: map,
+            title: place.name
+        });
+
+        const infowindow = new google.maps.InfoWindow({
+            content: `<h5>${place.name}</h5><p>${place.address}</p>`
+        });
+
+        marker.addListener('click', function() {
+            infowindow.open(map, marker);
+        });
+
+        markers.push(marker);
+    }
+
+    // Initialize the map when the page loads
+    window.onload = initMap;
+</script>
+
+<!-- Include the Google Maps API -->
+<script src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}&callback=initMap" async defer></script>
