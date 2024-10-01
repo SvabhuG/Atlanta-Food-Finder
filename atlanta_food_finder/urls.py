@@ -25,5 +25,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('accounts/', include('allauth.urls')),  # Include allauth routes for login, registration, etc.
     path('search/', views.search_restaurants, name='search_restaurants'),
+    path('like/', views.like_restaurant, name='like_restaurant'),
+    path('favorites/', views.favorite_restaurants, name='favorite_restaurants'),
 ]
 

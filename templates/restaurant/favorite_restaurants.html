@@ -1,0 +1,23 @@
+<!-- favorite_restaurants.html -->
+
+<div class="container">
+    <h2>My Favorite Restaurants</h2>
+
+    <div class="row mt-4">
+        {% for favorite in favorite_restaurants%}
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <img src="{{ favorite.restaurant_photo_reference }}" class="card-img-top" alt="{{ favorite.restaurant_name }}">
+                <div class="card-body">
+                    <h5 class="card-title">{{ favorite.restaurant_name }}</h5>
+                    <p class="card-text">{{ favorite.restaurant_address }}</p>
+                    <p class="card-text">Rating: {{ favorite.restaurant_rating }}</p>
+                    <a href="https://www.google.com/maps/search/?api=1&query={{ favorite.restaurant_name }}" class="btn btn-primary" target="_blank">View on Map</a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <p>You haven't liked any restaurants yet.</p>
+        {% endfor %}
+    </div>
+</div>
