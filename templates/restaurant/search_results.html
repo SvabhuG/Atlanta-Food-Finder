@@ -1,80 +1,77 @@
-<div class="container">
-    <h2>Search Restaurants</h2>
+<div class="container" style="display: flex; flex-direction: row;">
+    <!-- Left column: search results -->
+    <div style="width: 50%; padding-right: 20px;"> <!-- Set width of search results to 50% -->
+        <h2>Search Restaurants</h2>
 
-    <div class="row">
-        <!-- Left column: search results -->
-        <div class="col-md-8">
-            <form method="get">
-                <!-- Only the query input field remains, the location field has been removed -->
-                <input type="text" name="query" placeholder="Search by name or cuisine" class="form-control mb-2" value="{{ query }}">
-                <button type="submit" class="btn btn-primary">Search</button>
-            </form>
+        <form method="get">
+            <!-- Only the query input field remains, the location field has been removed -->
+            <input type="text" name="query" placeholder="Search by name or cuisine" class="form-control mb-2" value="{{ query }}">
+            <button type="submit" class="btn btn-primary">Search</button>
+        </form>
 
-            <div class="row mt-4">
-                {% for place in places %}
-                <div class="col-md-6 mb-4">
-                    <div class="card">
-                        <!-- Updated Image Tag -->
-                        <img src="https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference={{ place.photos.0.photo_reference }}&key={{ google_maps_api_key }}" class="card-img-top" alt="{{ place.name }}">
+        <div class="row mt-4">
+            {% for place in places %}
+            <div class="col-md-12 mb-4">
+                <div class="card" style="min-width: 250px;"> <!-- Make sure card is responsive -->
+                    <img src="https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference={{ place.photos.0.photo_reference }}&key={{ google_maps_api_key }}" class="card-img-top" alt="{{ place.name }}">
 
-                        <div class="card-body">
-                            <h5 class="card-title">{{ place.name }}</h5>
-                            <p class="card-text">{{ place.formatted_address }}</p>
-                            <p class="card-text">Rating: {{ place.rating }}</p>
-                             <p class="card-text">Phone Number: {{ place.phone_number }}</p>
+                    <div class="card-body">
+                        <h5 class="card-title">{{ place.name }}</h5>
+                        <p class="card-text">{{ place.formatted_address }}</p>
+                        <p class="card-text">Rating: {{ place.rating }}</p>
+                        <p class="card-text">Phone Number: {{ place.phone_number }}</p>
 
-                            <!-- Display Reviews -->
-                            <h6>Google Reviews:</h6>
-                            {% if place.reviews %}
-                                <ul class="list-group">
-                                    {% for review in place.reviews|slice:":2" %}
-                                        <li class="list-group-item">
-                                            <strong>{{ review.author_name }}</strong> rated {{ review.rating }} stars
-                                            <p>{{ review.text }}</p>
-                                            <small>{{ review.relative_time_description }}</small>
-                                        </li>
-                                    {% endfor %}
-                                </ul>
-                            {% else %}
-                                <p>No reviews available.</p>
-                            {% endif %}
+                        <!-- Display Reviews -->
+                        <h6>Google Reviews:</h6>
+                        {% if place.reviews %}
+                            <ul class="list-group">
+                                {% for review in place.reviews|slice:":2" %}
+                                    <li class="list-group-item">
+                                        <strong>{{ review.author_name }}</strong> rated {{ review.rating }} stars
+                                        <p>{{ review.text }}</p>
+                                        <small>{{ review.relative_time_description }}</small>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <p>No reviews available.</p>
+                        {% endif %}
 
-                            <!-- Like/Unlike functionality -->
-                            <form method="post" action="{% url 'like_restaurant' %}">
-                                {% csrf_token %}
-                                <input type="hidden" name="place_id" value="{{ place.place_id }}">
-                                <input type="hidden" name="restaurant_name" value="{{ place.name }}">
-                                <input type="hidden" name="restaurant_address" value="{{ place.formatted_address }}">
-                                <input type="hidden" name="restaurant_rating" value="{{ place.rating }}">
-                                <input type="hidden" name="restaurant_photo_reference" value="{{ place.photos.0.photo_reference }}">
-                                <input type="hidden" name="latitude" value="{{ place.geometry.location.lat }}">  <!-- Latitude from API -->
-                                <input type="hidden" name="longitude" value="{{ place.geometry.location.lng }}">  <!-- Longitude from API -->
-                                <button type="submit" class="btn btn-warning mt-2">
-                                    {% if place.place_id in liked_restaurants %}
-                                        Unlike
-                                    {% else %}
-                                        Like
-                                    {% endif %}
-                                </button>
-                            </form>
-                        </div>
+                        <!-- Like/Unlike functionality -->
+                        <form method="post" action="{% url 'like_restaurant' %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="place_id" value="{{ place.place_id }}">
+                            <input type="hidden" name="restaurant_name" value="{{ place.name }}">
+                            <input type="hidden" name="restaurant_address" value="{{ place.formatted_address }}">
+                            <input type="hidden" name="restaurant_rating" value="{{ place.rating }}">
+                            <input type="hidden" name="restaurant_photo_reference" value="{{ place.photos.0.photo_reference }}">
+                            <input type="hidden" name="latitude" value="{{ place.geometry.location.lat }}">  <!-- Latitude from API -->
+                            <input type="hidden" name="longitude" value="{{ place.geometry.location.lng }}">  <!-- Longitude from API -->
+                            <button type="submit" class="btn btn-warning mt-2">
+                                {% if place.place_id in liked_restaurants %}
+                                    Unlike
+                                {% else %}
+                                    Like
+                                {% endif %}
+                            </button>
+                        </form>
                     </div>
                 </div>
-                {% empty %}
-                <p>No restaurants found</p>
-                {% endfor %}
             </div>
-
-            <!-- Link to view all liked restaurants -->
-            <div class="mt-4">
-                <a href="{% url 'favorite_restaurants' %}" class="btn btn-success">View My Favorites</a>
-            </div>
+            {% empty %}
+            <p>No restaurants found</p>
+            {% endfor %}
         </div>
 
-        <!-- Right column: Map -->
-        <div class="col-md-4">
-            <div id="map" style="height: 500px; width: 100%;"></div>
+        <!-- Link to view all liked restaurants -->
+        <div class="mt-4">
+            <a href="{% url 'favorite_restaurants' %}" class="btn btn-success">View My Favorites</a>
         </div>
+    </div>
+
+    <!-- Right column: Sticky Map -->
+    <div style="width: 50%; position: sticky; top: 0;"> <!-- Set the width of the map to 50% -->
+        <div id="map" style="height: 100vh; width: 100%;"></div> <!-- Ensure the map takes the full height -->
     </div>
 </div>
 
@@ -86,7 +83,7 @@
         // Create a map centered on a default location (Atlanta)
         map = new google.maps.Map(document.getElementById('map'), {
             zoom: 12,
-            center: {lat: 33.7490, lng: -84.3880} // Default center on Atlanta
+            center: { lat: 33.7490, lng: -84.3880 } // Default center on Atlanta
         });
 
         // Clear existing markers
@@ -106,7 +103,7 @@
 
     function addMarker(place) {
         const marker = new google.maps.Marker({
-            position: {lat: place.lat, lng: place.lng},
+            position: { lat: place.lat, lng: place.lng },
             map: map,
             title: place.name
         });
