@@ -101,6 +101,11 @@
             margin-bottom: 20px;
         }
 
+        .profile-info {
+            font-size: 18px;
+            margin-bottom: 30px;
+        }
+
         /* Scrollbar styling for left column */
         .left-column::-webkit-scrollbar {
             width: 8px;
@@ -121,8 +126,30 @@
 </head>
 <body>
     <div class="container">
-        <!-- Left column: favorite restaurants -->
+        <!-- Left column: profile information and favorite restaurants -->
         <div class="left-column">
+            <!-- Profile Information Section -->
+            <h2>Profile Information</h2>
+            <div class="profile-info">
+                <p><strong>Username:</strong> {{ user.username }}</p>
+                <p><strong>Email:</strong> {{ user.email }}</p>
+                <p><strong>My favorite cuisine is</strong>
+                    <select id="cuisine-select" name="cuisine">
+                        <option value="" disabled selected>Select your favorite cuisine</option>
+                        <option value="Italian">Italian</option>
+                        <option value="Mexican">Mexican</option>
+                        <option value="Chinese">Chinese</option>
+                        <option value="Japanese">Japanese</option>
+                        <option value="Indian">Indian</option>
+                        <option value="Thai">Thai</option>
+                        <option value="French">French</option>
+                        <option value="Greek">Greek</option>
+                        <option value="Spanish">Spanish</option>
+                    </select>
+                </p>
+            </div>
+
+            <!-- Favorite Restaurants Section -->
             <h2>My Favorite Restaurants</h2>
 
             <!-- Button to go back to the main search page (moved to the top right) -->
