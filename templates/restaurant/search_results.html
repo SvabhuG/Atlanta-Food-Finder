@@ -1,127 +1,223 @@
-<div class="container" style="display: flex; flex-direction: row;">
-    <!-- Left column: search results -->
-    <div style="width: 50%; padding-right: 20px;"> <!-- Set width of search results to 50% -->
-        <h2>Search Restaurants</h2>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Restaurant Search</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif; /* Set the body font to Roboto */
+            background-color: #f8f9fa; /* Optional: Set a subtle background color for the whole page */
+        }
+        .container {
+            display: flex;
+            flex-direction: row;
+            height: 100vh;
+        }
+        .left-column {
+            width: 50%;
+            padding-right: 20px;
+            overflow-y: auto;
+            position: relative;
+            border: 1px solid #ccc;
+            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        .restaurant-card {
+            background-color: #e0f7fa; /* Light blue background */
+            border-radius: 15px; /* Rounded corners for a modern look */
+            padding: 15px;
+            margin-bottom: 20px; /* Add margin for spacing */
+            transition: all 0.3s ease; /* Smooth transition for hover effects */
+            box-shadow: 5px 5px 20px rgba(0, 0, 0, 0.15); /* Deeper shadow */
+            border: 1px solid #81d4fa; /* Light blue border for distinction */
+        }
+        .restaurant-card:hover {
+            transform: translateY(-5px) scale(1.02); /* Lift and slightly scale effect on hover */
+            box-shadow: 5px 15px 30px rgba(0, 0, 0, 0.3); /* Enhanced shadow on hover */
+        }
+        .btn-favorites {
+            background-color: #4caf50; /* Green background */
+            color: #ffffff; /* White text */
+            padding: 10px 20px; /* Padding for a larger button */
+            border: none; /* No border */
+            border-radius: 25px; /* Rounded corners */
+            text-align: center; /* Center the text */
+            font-size: 16px; /* Larger font size */
+            transition: background-color 0.3s ease, transform 0.3s ease; /* Smooth transition for background color and transform */
+            cursor: pointer; /* Pointer cursor on hover */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Shadow for depth */
+        }
+        .btn-favorites:hover {
+            background-color: #45a049; /* Darker green on hover */
+            transform: translateY(-2px); /* Slight lift effect on hover */
+        }
+        .btn-show-reviews {
+            background-color: #007bff; /* Blue background for reviews button */
+            color: #ffffff; /* White text */
+            border: none; /* No border */
+            border-radius: 5px; /* Rounded corners */
+            padding: 8px 12px; /* Padding for the button */
+            cursor: pointer; /* Pointer cursor on hover */
+            margin-top: 10px; /* Margin for spacing */
+            transition: background-color 0.3s ease; /* Smooth transition for background color */
+        }
+        .btn-show-reviews:hover {
+            background-color: #0056b3; /* Darker blue on hover */
+        }
+        .review-section {
+            display: none; /* Hide the review section by default */
+            margin-top: 10px; /* Space above the reviews */
+        }
+        h2, h5, h6 {
+            font-weight: 500; /* Use a medium weight for headings */
+            margin-bottom: 10px; /* Spacing between headings and text */
+            color: #0277bd; /* Darker blue for headings */
+        }
+        .card {
+            min-width: 250px;
+            border: none; /* Remove border from the inner card */
+        }
+        .card img {
+            border-radius: 10px; /* Rounded image corners */
+        }
+        .btn-warning {
+            background-color: #ff9800; /* Orange background for Like button */
+            color: #ffffff; /* White text */
+            border: none; /* No border */
+            border-radius: 5px; /* Rounded corners */
+            padding: 8px 12px; /* Padding for the button */
+            cursor: pointer; /* Pointer cursor on hover */
+            margin-top: 10px; /* Margin on top for spacing */
+            margin-bottom: 20px; /* Added margin on bottom for space between buttons */
+            transition: background-color 0.3s ease; /* Smooth transition for background color */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Left column: search results -->
+        <div class="left-column">
+            <h2>Search Restaurants</h2>
 
-        <form method="get">
-            <!-- Only the query input field remains, the location field has been removed -->
-            <input type="text" name="query" placeholder="Search by name or cuisine" class="form-control mb-2" value="{{ query }}">
-            <button type="submit" class="btn btn-primary">Search</button>
-        </form>
+            <!-- Link to view all liked restaurants moved to the top right -->
+            <div class="mt-4" style="position: absolute; top: 20px; right: 20px;">
+                <a href="{% url 'favorite_restaurants' %}" class="btn-favorites">View My Favorites</a>
+            </div>
 
-        <div class="row mt-4">
-            {% for place in places %}
-            <div class="col-md-12 mb-4">
-                <div class="card" style="min-width: 250px;"> <!-- Make sure card is responsive -->
-                    <img src="https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference={{ place.photos.0.photo_reference }}&key={{ google_maps_api_key }}" class="card-img-top" alt="{{ place.name }}">
+            <form method="get">
+                <input type="text" name="query" placeholder="Search by name or cuisine" class="form-control mb-2" value="{{ query }}">
+                <button type="submit" class="btn btn-primary">Search</button>
+            </form>
 
-                    <div class="card-body">
-                        <h5 class="card-title">{{ place.name }}</h5>
-                        <p class="card-text">{{ place.formatted_address }}</p>
-                        <p class="card-text">Rating: {{ place.rating }}</p>
-                        <p class="card-text">Phone Number: {{ place.phone_number }}</p>
+            <div class="row mt-4">
+                {% for place in places %}
+                <div class="col-md-12 mb-4 restaurant-card"> <!-- Added a class for restaurant cards -->
+                    <div class="card">
+                        <img src="https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference={{ place.photos.0.photo_reference }}&key={{ google_maps_api_key }}" class="card-img-top" alt="{{ place.name }}">
 
-                        <!-- Display Reviews -->
-                        <h6>Google Reviews:</h6>
-                        {% if place.reviews %}
-                            <ul class="list-group">
-                                {% for review in place.reviews|slice:":2" %}
-                                    <li class="list-group-item">
-                                        <strong>{{ review.author_name }}</strong> rated {{ review.rating }} stars
-                                        <p>{{ review.text }}</p>
-                                        <small>{{ review.relative_time_description }}</small>
-                                    </li>
-                                {% endfor %}
-                            </ul>
-                        {% else %}
-                            <p>No reviews available.</p>
-                        {% endif %}
+                        <div class="card-body">
+                            <h5 class="card-title">{{ place.name }}</h5>
+                            <p class="card-text">{{ place.formatted_address }}</p>
+                            <p class="card-text">Rating: {{ place.rating }}</p>
+                            <p class="card-text">Phone Number: {{ place.phone_number }}</p>
 
-                        <!-- Like/Unlike functionality -->
-                        <form method="post" action="{% url 'like_restaurant' %}">
-                            {% csrf_token %}
-                            <input type="hidden" name="place_id" value="{{ place.place_id }}">
-                            <input type="hidden" name="restaurant_name" value="{{ place.name }}">
-                            <input type="hidden" name="restaurant_address" value="{{ place.formatted_address }}">
-                            <input type="hidden" name="restaurant_rating" value="{{ place.rating }}">
-                            <input type="hidden" name="restaurant_photo_reference" value="{{ place.photos.0.photo_reference }}">
-                            <input type="hidden" name="latitude" value="{{ place.geometry.location.lat }}">  <!-- Latitude from API -->
-                            <input type="hidden" name="longitude" value="{{ place.geometry.location.lng }}">  <!-- Longitude from API -->
-                            <button type="submit" class="btn btn-warning mt-2">
-                                {% if place.place_id in liked_restaurants %}
-                                    Unlike
+                            <!-- Show Reviews button -->
+                            <button class="btn-show-reviews" onclick="toggleReviews('{{ place.place_id }}')">Show Reviews</button>
+
+                            <!-- Review Section -->
+                            <div class="review-section" id="reviews-{{ place.place_id }}">
+                                <h6>Google Reviews:</h6>
+                                {% if place.reviews %}
+                                    <ul class="list-group">
+                                        {% for review in place.reviews|slice:":2" %}
+                                            <li class="list-group-item">
+                                                <strong>{{ review.author_name }}</strong> rated {{ review.rating }} stars
+                                                <p>{{ review.text }}</p>
+                                                <small>{{ review.relative_time_description }}</small>
+                                            </li>
+                                        {% endfor %}
+                                    </ul>
                                 {% else %}
-                                    Like
+                                    <p>No reviews available.</p>
                                 {% endif %}
-                            </button>
-                        </form>
+                            </div>
+
+                            <!-- Like/Unlike functionality -->
+                            <form method="post" action="{% url 'like_restaurant' %}">
+                                {% csrf_token %}
+                                <input type="hidden" name="place_id" value="{{ place.place_id }}">
+                                <input type="hidden" name="restaurant_name" value="{{ place.name }}">
+                                <input type="hidden" name="restaurant_address" value="{{ place.formatted_address }}">
+                                <input type="hidden" name="restaurant_rating" value="{{ place.rating }}">
+                                <input type="hidden" name="restaurant_photo_reference" value="{{ place.photos.0.photo_reference }}">
+                                <input type="hidden" name="latitude" value="{{ place.geometry.location.lat }}">
+                                <input type="hidden" name="longitude" value="{{ place.geometry.location.lng }}">
+                                <button type="submit" class="btn btn-warning mt-2" style="margin-bottom: 20px;"> <!-- Add margin-bottom here -->
+                                    {% if place.place_id in liked_restaurants %}
+                                        Unlike
+                                    {% else %}
+                                        Like
+                                    {% endif %}
+                                </button>
+                            </form>
+                        </div>
                     </div>
                 </div>
+                {% empty %}
+                <p>No restaurants found</p>
+                {% endfor %}
             </div>
-            {% empty %}
-            <p>No restaurants found</p>
+        </div>
+
+        <!-- Right column: Sticky Map -->
+        <div style="width: 50%; position: relative;">
+            <div id="map" style="height: 100%; width: 100%; position: sticky; top: 0;"></div>
+        </div>
+    </div>
+
+    <script>
+        let map;
+        let markers = [];
+
+        function initMap() {
+            map = new google.maps.Map(document.getElementById('map'), {
+                zoom: 12,
+                center: { lat: 33.7490, lng: -84.3880 }
+            });
+
+            markers.forEach(marker => marker.setMap(null));
+            markers = [];
+
+            {% for place in places %}
+            addMarker({
+                lat: {{ place.geometry.location.lat }},
+                lng: {{ place.geometry.location.lng }},
+                name: "{{ place.name }}",
+                address: "{{ place.formatted_address }}"
+            });
             {% endfor %}
-        </div>
+        }
 
-        <!-- Link to view all liked restaurants -->
-        <div class="mt-4">
-            <a href="{% url 'favorite_restaurants' %}" class="btn btn-success">View My Favorites</a>
-        </div>
-    </div>
+        function addMarker(location) {
+            const marker = new google.maps.Marker({
+                position: location,
+                map: map,
+                title: location.name
+            });
 
-    <!-- Right column: Sticky Map -->
-    <div style="width: 50%; position: sticky; top: 0;"> <!-- Set the width of the map to 50% -->
-        <div id="map" style="height: 100vh; width: 100%;"></div> <!-- Ensure the map takes the full height -->
-    </div>
-</div>
+            markers.push(marker);
+        }
 
-<script>
-    let map;
-    let markers = []; // Array to hold markers
+        function toggleReviews(placeId) {
+            const reviewsSection = document.getElementById(`reviews-${placeId}`);
+            reviewsSection.style.display = reviewsSection.style.display === 'none' || reviewsSection.style.display === '' ? 'block' : 'none';
+        }
 
-    function initMap() {
-        // Create a map centered on a default location (Atlanta)
-        map = new google.maps.Map(document.getElementById('map'), {
-            zoom: 12,
-            center: { lat: 33.7490, lng: -84.3880 } // Default center on Atlanta
-        });
-
-        // Clear existing markers
-        markers.forEach(marker => marker.setMap(null));
-        markers = [];
-
-        // Loop through the places passed to the template and add markers to the map
-        {% for place in places %}
-        addMarker({
-            lat: {{ place.geometry.location.lat }},
-            lng: {{ place.geometry.location.lng }},
-            name: "{{ place.name }}",
-            address: "{{ place.formatted_address }}"
-        });
-        {% endfor %}
-    }
-
-    function addMarker(place) {
-        const marker = new google.maps.Marker({
-            position: { lat: place.lat, lng: place.lng },
-            map: map,
-            title: place.name
-        });
-
-        const infowindow = new google.maps.InfoWindow({
-            content: `<h5>${place.name}</h5><p>${place.address}</p>`
-        });
-
-        marker.addListener('click', function() {
-            infowindow.open(map, marker);
-        });
-
-        markers.push(marker);
-    }
-
-    // Initialize the map when the page loads
-    window.onload = initMap;
-</script>
-
-<!-- Include the Google Maps API -->
-<script src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}&callback=initMap" async defer></script>
+        window.initMap = initMap;
+    </script>
+    <script async defer
+        src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}&callback=initMap">
+    </script>
+</body>
+</html>
