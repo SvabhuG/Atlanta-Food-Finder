@@ -1,46 +1,171 @@
-<div class="container">
-    <h2>My Favorite Restaurants</h2>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Favorite Restaurants</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+        .left-column {
+            width: 50%;
+            padding: 20px;
+            overflow-y: auto;
+            background-color: #ffffff;
+            box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+        .right-column {
+            width: 50%;
+            position: relative;
+        }
 
-    <!-- Button to go back to the main search page -->
-    <div class="mb-4">
-        <a href="{% url 'search_restaurants' %}" class="btn btn-secondary">Back to Search</a>
-    </div>
+        .btn-secondary {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            margin-bottom: 20px;
+            position: absolute;
+            top: 20px;
+            right: 20px;
+        }
+        .btn-secondary:hover {
+            background-color: #0056b3;
+        }
 
-    <div class="row mt-4">
+        .card {
+            background-color: #e0f7fa;
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+            box-shadow: 5px 5px 20px rgba(0, 0, 0, 0.15);
+            border: 1px solid #81d4fa;
+        }
+        .card:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 5px 15px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-show-reviews {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 8px 12px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background-color 0.3s ease;
+        }
+        .btn-show-reviews:hover {
+            background-color: #0056b3;
+        }
+
+        .review-section {
+            display: none;
+            margin-top: 10px;
+            overflow: hidden;
+            max-height: 0;
+            transition: max-height 0.5s ease-out;
+        }
+
+        .btn-danger {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 10px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background-color 0.3s ease;
+        }
+        .btn-danger:hover {
+            background-color: #c82333;
+        }
+
+        h2 {
+            font-size: 28px;
+            color: #0277bd;
+            margin-bottom: 20px;
+        }
+
+        /* Scrollbar styling for left column */
+        .left-column::-webkit-scrollbar {
+            width: 8px;
+        }
+        .left-column::-webkit-scrollbar-thumb {
+            background-color: rgba(0, 0, 0, 0.2);
+            border-radius: 4px;
+        }
+
+        /* Map Styling */
+        #map {
+            height: 100%;
+            width: 100%;
+            position: sticky;
+            top: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
         <!-- Left column: favorite restaurants -->
-        <div class="col-md-8">
+        <div class="left-column">
+            <h2>My Favorite Restaurants</h2>
+
+            <!-- Button to go back to the main search page (moved to the top right) -->
+            <a href="{% url 'search_restaurants' %}" class="btn-secondary">Back to Search</a>
+
+            <!-- Dynamic restaurant listing -->
             <div class="row">
                 {% for data in restaurant_data %}
-                <div class="col-md-6 mb-4">
+                <div class="restaurant-card">
                     <div class="card">
-                        <!-- Restaurant photo using Google Maps API -->
                         <img src="https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference={{ data.restaurant.restaurant_photo_reference }}&key={{ google_maps_api_key }}" class="card-img-top" alt="{{ data.restaurant.restaurant_name }}">
+
                         <div class="card-body">
                             <h5 class="card-title">{{ data.restaurant.restaurant_name }}</h5>
                             <p class="card-text">{{ data.restaurant.restaurant_address }}</p>
                             <p class="card-text">Rating: {{ data.restaurant.restaurant_rating }}</p>
                             <p class="card-text">Phone Number: {{ data.phone_number }}</p>
 
-                            <!-- Display the first 2 reviews for each restaurant -->
-                            <h6>Google Reviews:</h6>
-                            {% if data.reviews %}
-                                <ul class="list-group">
-                                    {% for review in data.reviews|slice:":2" %}
-                                        <li class="list-group-item">
-                                            <strong>{{ review.author_name }}</strong> rated {{ review.rating }} stars
-                                            <p>{{ review.text }}</p>
-                                            <small>{{ review.relative_time_description }}</small>
-                                        </li>
-                                    {% endfor %}
-                                </ul>
-                            {% else %}
-                                <p>No reviews available.</p>
-                            {% endif %}
+                            <!-- Show Reviews button -->
+                            <button class="btn-show-reviews" onclick="toggleReviews('{{ data.restaurant.id }}')">Show Reviews</button>
+
+                            <!-- Review Section with sliding animation -->
+                            <div class="review-section" id="reviews-{{ data.restaurant.id }}">
+                                <h6>Google Reviews:</h6>
+                                {% if data.reviews %}
+                                    <ul class="list-group">
+                                        {% for review in data.reviews|slice:":2" %}
+                                            <li class="list-group-item">
+                                                <strong>{{ review.author_name }}</strong> rated {{ review.rating }} stars
+                                                <p>{{ review.text }}</p>
+                                                <small>{{ review.relative_time_description }}</small>
+                                            </li>
+                                        {% endfor %}
+                                    </ul>
+                                {% else %}
+                                    <p>No reviews available.</p>
+                                {% endif %}
+                            </div>
 
                             <!-- Unlike button -->
                             <form method="post" action="{% url 'unlike_restaurant' data.restaurant.id %}">
                                 {% csrf_token %}
-                                <button type="submit" class="btn btn-danger">Unlike</button>
+                                <button type="submit" class="btn-danger">Unlike</button>
                             </form>
                         </div>
                     </div>
@@ -52,59 +177,77 @@
         </div>
 
         <!-- Right column: Map -->
-        <div class="col-md-4">
-            <div id="map" style="height: 500px; width: 100%;"></div>
+        <div class="right-column">
+            <div id="map"></div>
         </div>
     </div>
-</div>
 
-<script>
-    let map;
-    let markers = []; // Array to hold markers
+    <script>
+        let map;
+        let markers = []; // Array to hold markers
 
-    function initMap() {
-        // Create a map centered on a default location (Atlanta)
-        map = new google.maps.Map(document.getElementById('map'), {
-            zoom: 12,
-            center: {lat: 33.7490, lng: -84.3880} // Default center on Atlanta
-        });
+        function initMap() {
+            // Create a map centered on a default location (Atlanta)
+            map = new google.maps.Map(document.getElementById('map'), {
+                zoom: 12,
+                center: { lat: 33.7490, lng: -84.3880 } // Default center on Atlanta
+            });
 
-        // Clear existing markers
-        markers.forEach(marker => marker.setMap(null));
-        markers = [];
+            // Clear existing markers
+            markers.forEach(marker => marker.setMap(null));
+            markers = [];
 
-        // Loop through the favorite restaurants and add markers to the map
-        {% for data in restaurant_data %}
-        addMarker({
-            lat: {{ data.restaurant.latitude }},
-            lng: {{ data.restaurant.longitude }},
-            name: "{{ data.restaurant.restaurant_name }}",
-            address: "{{ data.restaurant.restaurant_address }}"
-        });
-        {% endfor %}
-    }
+            // Loop through the favorite restaurants and add markers to the map
+            {% for data in restaurant_data %}
+            addMarker({
+                lat: {{ data.restaurant.latitude }},
+                lng: {{ data.restaurant.longitude }},
+                name: "{{ data.restaurant.restaurant_name }}",
+                address: "{{ data.restaurant.restaurant_address }}"
+            });
+            {% endfor %}
+        }
 
-    function addMarker(place) {
-        const marker = new google.maps.Marker({
-            position: {lat: place.lat, lng: place.lng},
-            map: map,
-            title: place.name
-        });
+        function addMarker(place) {
+            const marker = new google.maps.Marker({
+                position: { lat: place.lat, lng: place.lng },
+                map: map,
+                title: place.name
+            });
 
-        const infowindow = new google.maps.InfoWindow({
-            content: `<h5>${place.name}</h5><p>${place.address}</p>`
-        });
+            const infowindow = new google.maps.InfoWindow({
+                content: `<h5>${place.name}</h5><p>${place.address}</p>`
+            });
 
-        marker.addListener('click', function() {
-            infowindow.open(map, marker);
-        });
+            marker.addListener('click', function() {
+                infowindow.open(map, marker);
+            });
 
-        markers.push(marker);
-    }
+            markers.push(marker);
+        }
 
-    // Initialize the map when the page loads
-    window.onload = initMap;
-</script>
+        // Toggle Reviews with Animation
+        function toggleReviews(restaurantId) {
+            const reviewsSection = document.getElementById(`reviews-${restaurantId}`);
+            const maxHeight = reviewsSection.style.maxHeight;
 
-<!-- Include the Google Maps API -->
-<script src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}&callback=initMap" async defer></script>
+            // Toggle maxHeight to enable smooth slide up/down
+            if (maxHeight === "0px" || maxHeight === "") {
+                reviewsSection.style.display = "block"; // Ensure it's visible
+                reviewsSection.style.maxHeight = reviewsSection.scrollHeight + "px";
+            } else {
+                reviewsSection.style.maxHeight = "0px";
+                setTimeout(() => {
+                    reviewsSection.style.display = "none";
+                }, 500); // Match the duration of the transition
+            }
+        }
+
+        // Initialize the map when the page loads
+        window.onload = initMap;
+    </script>
+
+    <!-- Include the Google Maps API -->
+    <script src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}&callback=initMap" async defer></script>
+</body>
+</html>

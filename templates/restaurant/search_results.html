@@ -93,6 +93,14 @@
         .btn-warning:hover {
             background-color: #e68a00;
         }
+        .search-btn:hover {
+            background-color: #0056b3;
+            transform: translateY(-2px);
+        }
+        .search-btn:active {
+            background-color: #003f8f;
+            transform: translateY(2px);
+        }
     </style>
 </head>
 <body>
@@ -105,9 +113,17 @@
                 <a href="{% url 'favorite_restaurants' %}" class="btn-favorites">View My Favorites</a>
             </div>
 
-            <form method="get">
-                <input type="text" name="query" placeholder="Search by name or cuisine" class="form-control mb-2" value="{{ query }}">
-                <button type="submit" class="btn btn-primary">Search</button>
+            <!-- Updated Search Bar and Button Styling -->
+            <form method="get" style="display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 20px;">
+                <input type="text" name="query" placeholder="Search by name or cuisine"
+                       class="form-control mb-2" value="{{ query }}"
+                       style="flex-grow: 1; padding: 12px 20px; border: 2px solid #007bff; border-radius: 25px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); font-size: 16px; outline: none;">
+
+                <button type="submit"
+                        class="btn btn-primary search-btn"
+                        style="padding: 12px 20px; background-color: #007bff; border: none; border-radius: 25px; color: white; font-size: 16px; cursor: pointer; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); transition: background-color 0.3s ease, transform 0.2s;">
+                    Search
+                </button>
             </form>
 
             <div class="row mt-4">
@@ -215,13 +231,13 @@
 
             // Toggle maxHeight to enable smooth slide up/down
             if (maxHeight === "0px" || maxHeight === "") {
-                reviewsSection.style.display = "block"; // Ensure it's visible
+                reviewsSection.style.display = "block";
                 reviewsSection.style.maxHeight = reviewsSection.scrollHeight + "px";
             } else {
                 reviewsSection.style.maxHeight = "0px";
                 setTimeout(() => {
                     reviewsSection.style.display = "none";
-                }, 500); // Match the duration of the transition
+                }, 500);
             }
         }
 
@@ -261,6 +277,14 @@
                 .catch(error => console.error('Error:', error));
             });
         });
+    });
+
+    // Feedback for Search Button
+    document.querySelector('.search-btn').addEventListener('click', function() {
+        this.textContent = "Searching...";
+        setTimeout(() => {
+            this.textContent = "Search";
+        }, 2000);  // Simulate a short delay
     });
     </script>
 
