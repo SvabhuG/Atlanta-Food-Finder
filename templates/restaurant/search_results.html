@@ -47,24 +47,61 @@
             transition: background-color 0.3s ease, transform 0.3s ease;
             cursor: pointer;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            text-decoration: none;
         }
         .btn-favorites:hover {
             background-color: #45a049;
             transform: translateY(-2px);
         }
-        .btn-show-reviews {
+        .btn-show-reviews, .btn-directions, .btn-write-review, .like-button {
+            width: 100%;
+            max-width: 180px;
+            display: inline-block;
             background-color: #007bff;
-            color: #ffffff;
+            color: white;
             border: none;
             border-radius: 5px;
-            padding: 8px 12px;
+            padding: 10px;
             cursor: pointer;
+            font-size: 16px;
             margin-top: 10px;
-            transition: background-color 0.3s ease;
+            text-align: center;
+            text-decoration: none;
+            transition: background-color 0.3s ease, transform 0.2s;
         }
         .btn-show-reviews:hover {
             background-color: #0056b3;
         }
+        .btn-directions {
+            background-color: #28a745;
+        }
+        .btn-directions:hover {
+            background-color: #218838;
+        }
+        .btn-write-review {
+            background-color: #ffc107;
+        }
+        .btn-write-review:hover {
+            background-color: #e0a800;
+        }
+
+        /* Cool Like Button Styling */
+        .like-button {
+            background: linear-gradient(45deg, #ff6b6b, #ff7b7b);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-size: 16px;
+            box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.3s ease;
+        }
+        .like-button:hover {
+            background: linear-gradient(45deg, #ff8787, #ff9999);
+            transform: scale(1.05);
+        }
+
         .review-section {
             display: none;
             margin-top: 10px;
@@ -79,27 +116,10 @@
         .card img {
             border-radius: 10px;
         }
-        .btn-warning {
-            background-color: #ff9800;
-            color: #ffffff;
-            border: none;
-            border-radius: 5px;
-            padding: 8px 12px;
-            cursor: pointer;
-            margin-top: 10px;
-            margin-bottom: 20px;
-            transition: background-color 0.3s ease;
-        }
-        .btn-warning:hover {
-            background-color: #e68a00;
-        }
-        .search-btn:hover {
-            background-color: #0056b3;
-            transform: translateY(-2px);
-        }
-        .search-btn:active {
-            background-color: #003f8f;
-            transform: translateY(2px);
+
+        /* Remove underline from all button text */
+        a.btn-show-reviews, a.btn-directions, a.btn-write-review, button {
+            text-decoration: none;
         }
     </style>
 </head>
@@ -113,12 +133,28 @@
                 <a href="{% url 'favorite_restaurants' %}" class="btn-favorites">View My Profile</a>
             </div>
 
-
-            <!-- Updated Search Bar and Button Styling -->
-            <form method="get" style="display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 20px;">
+            <!-- Updated Search Bar, Rating Filter, and Distance Filter -->
+            <form method="get" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px;">
                 <input type="text" name="query" placeholder="Search by name or cuisine"
                        class="form-control mb-2" value="{{ query }}"
                        style="flex-grow: 1; padding: 12px 20px; border: 2px solid #007bff; border-radius: 25px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); font-size: 16px; outline: none;">
+
+                <!-- Rating Filter -->
+                <select name="rating" class="form-control" style="padding: 12px; border-radius: 25px; border: 2px solid #007bff;">
+                    <option value="">Filter by Rating</option>
+                    <option value="4.5">4.5+ Stars</option>
+                    <option value="4.0">4.0+ Stars</option>
+                    <option value="3.5">3.5+ Stars</option>
+                    <option value="3.0">3.0+ Stars</option>
+                </select>
+
+                <!-- Distance Filter -->
+                <select name="distance" class="form-control" style="padding: 12px; border-radius: 25px; border: 2px solid #007bff;">
+                    <option value="">Filter by Proximity</option>
+                    <option value="1">Within 1 mile</option>
+                    <option value="5">Within 5 miles</option>
+                    <option value="10">Within 10 miles</option>
+                </select>
 
                 <button type="submit"
                         class="btn btn-primary search-btn"
@@ -139,10 +175,13 @@
                             <p class="card-text">Rating: {{ place.rating }}</p>
                             <p class="card-text">Phone Number: {{ place.phone_number }}</p>
 
-                            <!-- Directions Link -->
-                            <a href="https://www.google.com/maps/dir/?api=1&destination={{ place.geometry.location.lat }},{{ place.geometry.location.lng }}" target="_blank" class="btn btn-primary">Directions</a>
+                            <!-- Directions Button -->
+                            <a href="https://www.google.com/maps/dir/?api=1&destination={{ place.geometry.location.lat }},{{ place.geometry.location.lng }}" target="_blank" class="btn-directions">Directions</a>
 
-                            <!-- Show Reviews button -->
+                            <!-- Write a Review Button -->
+                            <a href="https://search.google.com/local/writereview?placeid={{ place.place_id }}" target="_blank" class="btn-write-review">Write a Review</a>
+
+                            <!-- Show Reviews Button -->
                             <button class="btn-show-reviews" onclick="toggleReviews('{{ place.place_id }}')">Show Reviews</button>
 
                             <!-- Review Section with sliding animation -->
@@ -173,7 +212,7 @@
                                 <input type="hidden" name="restaurant_photo_reference" value="{{ place.photos.0.photo_reference }}">
                                 <input type="hidden" name="latitude" value="{{ place.geometry.location.lat }}">
                                 <input type="hidden" name="longitude" value="{{ place.geometry.location.lng }}">
-                                <button type="button" class="btn btn-warning like-button">
+                                <button type="button" class="like-button">
                                     {% if place.place_id in liked_restaurants %}
                                         Unlike
                                     {% else %}

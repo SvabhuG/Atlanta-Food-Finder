@@ -29,20 +29,70 @@
             position: relative;
         }
 
+        .btn-secondary, .btn-directions, .btn-write-review, .btn-show-reviews, .btn-danger, .btn-logout {
+            display: inline-block;
+            text-align: center;
+            width: 100%;
+            max-width: 180px;
+            padding: 10px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background-color 0.3s ease, transform 0.2s;
+            margin-top: 10px;
+        }
+
         .btn-secondary {
             background-color: #007bff;
             color: white;
-            padding: 10px 20px;
             border: none;
-            border-radius: 30px;
-            cursor: pointer;
-            margin-bottom: 20px;
+        }
+        .btn-secondary:hover {
+            background-color: #0056b3;
+        }
+
+        .btn-show-reviews {
+            background-color: #007bff;
+            color: white;
+        }
+        .btn-show-reviews:hover {
+            background-color: #0056b3;
+        }
+
+        .btn-directions {
+            background-color: #28a745;
+            color: white;
+        }
+        .btn-directions:hover {
+            background-color: #218838;
+        }
+
+        .btn-write-review {
+            background-color: #ffc107;
+            color: white;
+        }
+        .btn-write-review:hover {
+            background-color: #e0a800;
+        }
+
+        .btn-danger {
+            background-color: #dc3545;
+            color: white;
+        }
+        .btn-danger:hover {
+            background-color: #c82333;
+        }
+
+        .btn-logout {
+            background-color: #ff4444;
+            color: white;
             position: absolute;
             top: 20px;
             right: 20px;
         }
-        .btn-secondary:hover {
-            background-color: #0056b3;
+        .btn-logout:hover {
+            background-color: #e03030;
         }
 
         .card {
@@ -59,40 +109,12 @@
             box-shadow: 5px 15px 30px rgba(0, 0, 0, 0.3);
         }
 
-        .btn-show-reviews {
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            padding: 8px 12px;
-            cursor: pointer;
-            margin-top: 10px;
-            transition: background-color 0.3s ease;
-        }
-        .btn-show-reviews:hover {
-            background-color: #0056b3;
-        }
-
         .review-section {
             display: none;
             margin-top: 10px;
             overflow: hidden;
             max-height: 0;
             transition: max-height 0.5s ease-out;
-        }
-
-        .btn-danger {
-            background-color: #dc3545;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            padding: 10px;
-            cursor: pointer;
-            margin-top: 10px;
-            transition: background-color 0.3s ease;
-        }
-        .btn-danger:hover {
-            background-color: #c82333;
         }
 
         h2 {
@@ -128,6 +150,9 @@
     <div class="container">
         <!-- Left column: profile information and favorite restaurants -->
         <div class="left-column">
+            <!-- Logout Button -->
+            <a href="http://localhost:8000/accounts/logout" class="btn-logout">Logout</a>
+
             <!-- Profile Information Section -->
             <h2>Profile Information</h2>
             <div class="profile-info">
@@ -168,8 +193,11 @@
                             <p class="card-text">Rating: {{ data.restaurant.restaurant_rating }}</p>
                             <p class="card-text">Phone Number: {{ data.phone_number }}</p>
 
-                            <!-- Directions Link -->
-                            <a href="https://www.google.com/maps/dir/?api=1&destination={{ data.restaurant.latitude }},{{ data.restaurant.longitude }}" target="_blank" class="btn btn-primary">Directions</a>
+                            <!-- Directions Button -->
+                            <a href="https://www.google.com/maps/dir/?api=1&destination={{ data.restaurant.latitude }},{{ data.restaurant.longitude }}" target="_blank" class="btn-directions">Directions</a>
+
+                            <!-- Write a Review Button -->
+                            <a href="https://search.google.com/local/writereview?placeid={{ data.restaurant.place_id }}" target="_blank" class="btn-write-review">Write a Review</a>
 
                             <!-- Show Reviews button -->
                             <button class="btn-show-reviews" onclick="toggleReviews('{{ data.restaurant.id }}')">Show Reviews</button>

@@ -1,33 +1,29 @@
 import requests
 from django.http import JsonResponse
-from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import login
 from django.shortcuts import render, redirect, get_object_or_404
-from .models import RestaurantGeolocation, FavoriteRestaurant, Review  # Import the Review model
+from .models import FavoriteRestaurant, RestaurantGeolocation
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
-
+from geopy.distance import geodesic  # To calculate distance between two coordinates
 
 API_KEY = settings.GOOGLE_MAPS_API_KEY  # Retrieve the API key from your settings
-
 
 @login_required
 def search_restaurants(request):
     query = request.GET.get('query', '')  # This could be restaurant name or cuisine type
-    location = request.GET.get('location', 'Atlanta')  # Default location if none provided
-
-    # Retrieve the API key from settings
-    API_KEY = settings.GOOGLE_MAPS_API_KEY
+    location = request.GET.get('location', '33.7490,-84.3880')  # Default to Atlanta coordinates (lat, lng)
+    rating_filter = request.GET.get('rating', '')  # Get the rating filter
+    distance_filter = request.GET.get('distance', '')  # Get the distance filter in miles
 
     # Call the Google Places Text Search API
     text_search_url = f"https://maps.googleapis.com/maps/api/place/textsearch/json?query={query}+restaurants&location={location}&radius=5000&key={API_KEY}"
     response = requests.get(text_search_url)
-
-    # Extract places from the response
     places = response.json().get('results', [])
 
     # List to store places along with reviews and details
     places_with_details = []
+    user_location = tuple(map(float, location.split(',')))  # Convert location to (lat, lng)
 
     # Get the list of liked place_ids for the current user
     liked_restaurants = FavoriteRestaurant.objects.filter(user=request.user).values_list('place_id', flat=True)
@@ -35,6 +31,18 @@ def search_restaurants(request):
     # Call Place Details API to get reviews, phone numbers, and cuisine type for each place
     for place in places:
         place_id = place.get('place_id')
+
+        # Apply the rating filter
+        if rating_filter and place.get('rating', 0) < float(rating_filter):
+            continue  # Skip places that don't meet the rating filter
+
+        # Calculate distance between user's location and restaurant location
+        place_location = (place['geometry']['location']['lat'], place['geometry']['location']['lng'])
+        distance = geodesic(user_location, place_location).miles
+
+        # Apply the distance filter
+        if distance_filter and distance > float(distance_filter):
+            continue  # Skip places that don't meet the distance filter
 
         # Call Google Places Details API to fetch reviews, phone number, and cuisine type
         details_url = f"https://maps.googleapis.com/maps/api/place/details/json?place_id={place_id}&fields=reviews,formatted_phone_number,types&key={API_KEY}"
@@ -51,6 +59,7 @@ def search_restaurants(request):
         # Add phone number, cuisine type, and reviews to the current place
         place['reviews'] = limited_reviews
         place['phone_number'] = phone_number
+        place['distance'] = round(distance, 2)  # Add calculated distance to the place
 
         # Add the place with details to the list
         places_with_details.append(place)
@@ -64,12 +73,6 @@ def search_restaurants(request):
     }
 
     return render(request, 'restaurant/search_results.html', context)
-
-
-
-import requests
-from django.http import JsonResponse
-
 
 @login_required
 def like_restaurant(request):
@@ -105,8 +108,6 @@ def like_restaurant(request):
 
         return JsonResponse({'liked': liked})
 
-
-
 @login_required
 def favorite_restaurants(request):
     favorite_restaurants = FavoriteRestaurant.objects.filter(user=request.user)
@@ -136,14 +137,6 @@ def favorite_restaurants(request):
 
     return render(request, 'restaurant/favorite_restaurants.html', context)
 
-
-@login_required
-def unlike_restaurant(request, favorite_id):
-    favorite = get_object_or_404(FavoriteRestaurant, id=favorite_id, user=request.user)
-    favorite.delete()  # Remove the favorite restaurant
-    return redirect('favorite_restaurants')  # Redirect back to the favorite restaurants list
-
-
 def restaurant_data(request):
     search_query = request.GET.get('name', '')
     if search_query:
@@ -163,16 +156,8 @@ def restaurant_data(request):
 
     return JsonResponse(restaurant_list, safe=False)
 
-
-# New user registration view
-def register(request):
-    if request.method == 'POST':
-        form = UserCreationForm(request.POST)
-        if form.is_valid():
-            user = form.save()  # Save the user to the database
-            login(request, user)  # Log the user in after registration
-            return redirect('show_map')  # Redirect to map or home page after registration
-    else:
-        form = UserCreationForm()  # Create an empty form instance
-
-    return render(request, 'register.html', {'form': form})  # Render the registration template
+@login_required
+def unlike_restaurant(request, favorite_id):
+    favorite = get_object_or_404(FavoriteRestaurant, id=favorite_id, user=request.user)
+    favorite.delete()  # Remove the favorite restaurant
+    return redirect('favorite_restaurants')  # Redirect back to the favorite restaurants list
