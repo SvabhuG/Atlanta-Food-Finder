@@ -37,8 +37,8 @@
                             <p>No reviews available.</p>
                         {% endif %}
 
-                        <!-- Like/Unlike functionality -->
-                        <form method="post" action="{% url 'like_restaurant' %}">
+                        <!-- Like/Unlike functionality using AJAX -->
+                        <form method="post" action="{% url 'like_restaurant' %}" class="like-form">
                             {% csrf_token %}
                             <input type="hidden" name="place_id" value="{{ place.place_id }}">
                             <input type="hidden" name="restaurant_name" value="{{ place.name }}">
@@ -47,7 +47,7 @@
                             <input type="hidden" name="restaurant_photo_reference" value="{{ place.photos.0.photo_reference }}">
                             <input type="hidden" name="latitude" value="{{ place.geometry.location.lat }}">  <!-- Latitude from API -->
                             <input type="hidden" name="longitude" value="{{ place.geometry.location.lng }}">  <!-- Longitude from API -->
-                            <button type="submit" class="btn btn-warning mt-2">
+                            <button type="button" class="btn btn-warning like-button" data-place-id="{{ place.place_id }}">
                                 {% if place.place_id in liked_restaurants %}
                                     Unlike
                                 {% else %}
@@ -121,6 +121,36 @@
 
     // Initialize the map when the page loads
     window.onload = initMap;
+
+    // AJAX handling for like/unlike functionality
+    document.addEventListener("DOMContentLoaded", function() {
+        // Get all like buttons
+        const likeButtons = document.querySelectorAll(".like-button");
+
+        likeButtons.forEach(button => {
+            button.addEventListener("click", function() {
+                const form = this.closest("form");
+                const formData = new FormData(form);
+
+                fetch(form.action, {
+                    method: "POST",
+                    headers: {
+                        'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+                    },
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.liked) {
+                        this.textContent = "Unlike";
+                    } else {
+                        this.textContent = "Like";
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+            });
+        });
+    });
 </script>
 
 <!-- Include the Google Maps API -->

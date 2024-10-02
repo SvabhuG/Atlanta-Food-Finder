@@ -68,6 +68,8 @@ def search_restaurants(request):
 
 
 
+from django.http import JsonResponse
+
 @login_required
 def like_restaurant(request):
     if request.method == 'POST':
@@ -85,18 +87,10 @@ def like_restaurant(request):
         if existing_favorite.exists():
             # If already liked, remove it (unlike)
             existing_favorite.delete()
+            liked = False
         else:
             # Otherwise, add it to the favorites
-            # Fetch details from the Google Places API (including cuisine type)
-            details_url = f"https://maps.googleapis.com/maps/api/place/details/json?place_id={place_id}&fields=reviews,formatted_phone_number,types&key={API_KEY}"
-            details_response = requests.get(details_url)
-            details_data = details_response.json()
-
-            # Check if reviews exist in the details response
-            reviews = details_data.get('result', {}).get('reviews', [])
-            phone_number = details_data.get('result', {}).get('formatted_phone_number', 'N/A')
-
-            favorite_restaurant = FavoriteRestaurant.objects.create(
+            FavoriteRestaurant.objects.create(
                 user=request.user,
                 place_id=place_id,
                 restaurant_name=restaurant_name,
@@ -104,41 +98,38 @@ def like_restaurant(request):
                 restaurant_rating=restaurant_rating,
                 restaurant_photo_reference=restaurant_photo_reference,
                 latitude=latitude,
-                longitude=longitude,
-                phone_number=phone_number,  # Store the phone number
+                longitude=longitude
             )
+            liked = True
 
-            # Create Review objects for each review in the response
-            for review_data in reviews:
-                Review.objects.create(
-                    favorite_restaurant=favorite_restaurant,
-                    author_name=review_data['author_name'],
-                    rating=review_data['rating'],
-                    text=review_data['text'],
-                    relative_time_description=review_data['relative_time_description']
-                )
-
-    return redirect('search_restaurants')
+        return JsonResponse({'liked': liked})
 
 
 @login_required
 def favorite_restaurants(request):
-    # Get the list of liked restaurants for the current user
     favorite_restaurants = FavoriteRestaurant.objects.filter(user=request.user)
 
-    # Prepare restaurant data with latitude and longitude for the map
-    restaurant_data = [
-        {
+    restaurant_data = []
+
+    for favorite in favorite_restaurants:
+        # Fetch details from the Google Places API (including reviews and phone number)
+        details_url = f"https://maps.googleapis.com/maps/api/place/details/json?place_id={favorite.place_id}&fields=reviews,formatted_phone_number&key={settings.GOOGLE_MAPS_API_KEY}"
+        details_response = requests.get(details_url)
+        details_data = details_response.json()
+
+        # Check if reviews exist in the details response
+        reviews = details_data.get('result', {}).get('reviews', [])
+        phone_number = details_data.get('result', {}).get('formatted_phone_number', 'N/A')
+
+        restaurant_data.append({
             'restaurant': favorite,
-            'latitude': favorite.latitude,  # Assuming latitude is stored
-            'longitude': favorite.longitude  # Assuming longitude is stored
-        }
-        for favorite in favorite_restaurants
-    ]
+            'reviews': reviews,
+            'phone_number': phone_number
+        })
 
     context = {
-        'favorite_restaurants': restaurant_data,
-        'google_maps_api_key': settings.GOOGLE_MAPS_API_KEY,  # Pass the API key to the template
+        'restaurant_data': restaurant_data,
+        'google_maps_api_key': settings.GOOGLE_MAPS_API_KEY
     }
 
     return render(request, 'restaurant/favorite_restaurants.html', context)
