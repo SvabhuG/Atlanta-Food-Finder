@@ -138,6 +138,9 @@
                             <p class="card-text">Rating: {{ place.rating }}</p>
                             <p class="card-text">Phone Number: {{ place.phone_number }}</p>
 
+                            <!-- Directions Link -->
+                            <a href="https://www.google.com/maps/dir/?api=1&destination={{ place.geometry.location.lat }},{{ place.geometry.location.lng }}" target="_blank" class="btn btn-primary">Directions</a>
+
                             <!-- Show Reviews button -->
                             <button class="btn-show-reviews" onclick="toggleReviews('{{ place.place_id }}')">Show Reviews</button>
 
@@ -210,7 +213,8 @@
                 lat: {{ place.geometry.location.lat }},
                 lng: {{ place.geometry.location.lng }},
                 name: "{{ place.name }}",
-                address: "{{ place.formatted_address }}"
+                address: "{{ place.formatted_address }}",
+                rating: "{{ place.rating }}"
             });
             {% endfor %}
         }
@@ -220,6 +224,14 @@
                 position: location,
                 map: map,
                 title: location.name
+            });
+
+            const infoWindow = new google.maps.InfoWindow({
+                content: `<h4>${location.name}</h4><p>${location.address}</p><p>Rating: ${location.rating}</p><a href="https://www.google.com/maps/dir/?api=1&destination=${location.lat},${location.lng}" target="_blank">Directions</a>`
+            });
+
+            marker.addListener('click', function() {
+                infoWindow.open(map, marker);
             });
 
             markers.push(marker);
